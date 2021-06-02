@@ -1227,7 +1227,7 @@ retrieve_from_file (const char *file, bool html, int *count)
   else
     input_file = (char *) file;
 
-  url_list = (html ? get_urls_html (input_file, NULL, NULL, iri)
+  url_list = (html ? get_urls_html (input_file, NULL, NULL, iri, 0)
               : get_urls_file (input_file));
 
   xfree (url_file);

@@ -1278,18 +1278,21 @@ has_html_suffix_p (const char *fname)
    If you want to read from a real file named "-", use "./-" instead.  */
 
 struct file_memory *
-wget_read_file (const char *file)
+wget_read_file_seek (const char *file, wgint offset)
 {
   int fd;
   struct file_memory *fm;
   long size;
   bool inhibit_close = false;
 
+  assert(offset >= 0);
+
   /* Some magic in the finest tradition of Perl and its kin: if FILE
      is "-", just use stdin.  */
 #ifndef FUZZING
   if (HYPHENP (file))
     {
+      offset = 0;
       fd = fileno (stdin);
       inhibit_close = true;
       /* Note that we don't inhibit mmap() in this case.  If stdin is
@@ -1301,6 +1304,7 @@ wget_read_file (const char *file)
   if (fd < 0)
     return NULL;
   fm = xnew (struct file_memory);
+  fm->offset = offset;
 
 #ifdef HAVE_MMAP
   {
@@ -1319,6 +1323,9 @@ wget_read_file (const char *file)
     if (!inhibit_close)
       close (fd);
 
+    fm->content = (char*)fm->content + offset;
+    fm->length -= offset;
+
     fm->mmap_p = 1;
     return fm;
   }
@@ -1334,6 +1341,8 @@ wget_read_file (const char *file)
   size = 512;                   /* number of bytes fm->contents can
                                    hold at any given time. */
   fm->content = xmalloc (size);
+  if (offset)
+    lseek(fd, offset, SEEK_SET);
   while (1)
     {
       wgint nread;
@@ -1384,6 +1393,11 @@ wget_read_file (const char *file)
   return NULL;
 }
 
+struct file_memory *
+wget_read_file (const char *file) {
+  return wget_read_file_seek(file, 0);
+}
+
 /* Release the resources held by FM.  Specifically, this calls
    munmap() or xfree() on fm->content, depending whether mmap or
    malloc/read were used to read in the file.  It also frees the
@@ -1395,7 +1409,8 @@ wget_read_file_free (struct file_memory *fm)
 #ifdef HAVE_MMAP
   if (fm->mmap_p)
     {
-      munmap (fm->content, fm->length);
+      /* Add offset back to length so we munmap properly */
+      munmap (fm->content, fm->length + fm->offset);
     }
   else
 #endif

@@ -60,6 +60,7 @@ struct hash_table;
 struct file_memory {
   char *content;
   long length;
+  long offset;
   int mmap_p;
 };
 
@@ -108,6 +109,7 @@ bool has_wildcards_p (const char *);
 bool has_html_suffix_p (const char *);
 
 struct file_memory *wget_read_file (const char *);
+struct file_memory *wget_read_file_seek (const char *, wgint);
 void wget_read_file_free (struct file_memory *);
 
 void free_vec (char **);

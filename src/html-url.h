@@ -49,7 +49,7 @@ struct map_context {
 };
 
 struct urlpos *get_urls_file (const char *);
-struct urlpos *get_urls_html (const char *, const char *, bool *, struct iri *);
+struct urlpos *get_urls_html (const char *, const char *, bool *, struct iri *, wgint);
 struct urlpos *get_urls_html_fm (const char *, const struct file_memory *, const char *, bool *, struct iri *);
 struct urlpos *append_url (const char *, int, int, struct map_context *);
 void free_urlpos (struct urlpos *);
