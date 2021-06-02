@@ -209,13 +209,13 @@ get_urls_css (struct map_context *ctx, int offset, int buf_length)
 }
 
 struct urlpos *
-get_urls_css_file (const char *file, const char *url)
+get_urls_css_file (const char *file, const char *url, wgint file_offset)
 {
   struct file_memory *fm;
   struct map_context ctx;
 
   /* Load the file. */
-  fm = wget_read_file (file);
+  fm = wget_read_file_seek (file, file_offset);
   if (!fm)
     {
       logprintf (LOG_NOTQUIET, "%s: %s\n", file, strerror (errno));

@@ -851,12 +851,12 @@ get_urls_html_fm (const char *file, const struct file_memory *fm,
 
 struct urlpos *
 get_urls_html (const char *file, const char *url, bool *meta_disallow_follow,
-                 struct iri *iri)
+                 struct iri *iri, wgint file_offset)
 {
   struct urlpos *urls;
   struct file_memory *fm;
 
-  fm = wget_read_file (file);
+  fm = wget_read_file_seek (file, file_offset);
   if (!fm)
     {
       logprintf (LOG_NOTQUIET, "%s: %s\n", file, strerror (errno));

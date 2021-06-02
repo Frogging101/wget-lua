@@ -275,6 +275,7 @@ retrieve_tree (struct url *start_url_parsed, struct iri *pi)
     {
       bool descend = false;
       char *url, *referer, *file = NULL;
+      wgint file_offset = 0;
       int depth;
       bool html_allowed, css_allowed;
       char *body_data = NULL;
@@ -392,6 +393,14 @@ retrieve_tree (struct url *start_url_parsed, struct iri *pi)
                     } while (header_cur != NULL);
                 }
 
+              /* If writing to a single file, store the offset into the file
+                 where we will download our data.  */
+              if (opt.output_document)
+                {
+                  assert (output_stream && output_stream_regular);
+                  file_offset = ftell(output_stream);
+                }
+
               status = retrieve_url (url_parsed, url, &file, &redirected, referer,
                                      &dt, false, i, true);
 
@@ -496,8 +505,9 @@ retrieve_tree (struct url *start_url_parsed, struct iri *pi)
         {
           bool meta_disallow_follow = false;
           struct urlpos *children
-            = is_css ? get_urls_css_file (file, url) :
-                       get_urls_html (file, url, &meta_disallow_follow, i);
+            = is_css ? get_urls_css_file (file, url, file_offset) :
+                       get_urls_html (file, url, &meta_disallow_follow, i,
+                                      file_offset);
 
           if (opt.use_robots && meta_disallow_follow)
             {
